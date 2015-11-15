@@ -16,10 +16,10 @@ wind.add(rect);
 wind.show();
 
 Accel.init()
-
+var IP = '129.161.68.32'
 wind.on('show', function(){
   ajax({
-      url: 'http://129.161.93.30:5000/begin'
+      url: 'http://'+IP+':5000/begin'
     },
     function(data, status, request) {
       console.log('Ended session');
@@ -32,7 +32,7 @@ wind.on('show', function(){
 
 wind.on('hide', function(){
   ajax({
-      url: 'http://129.161.93.30:5000/end'
+      url: 'http://'+IP+':5000/end'
     },
     function(data, status, request) {
       console.log('Ended session');
@@ -46,7 +46,7 @@ wind.on('hide', function(){
 Accel.on('data', function(data) {
   console.log(data.samples)
   ajax({
-      url: 'http://129.161.93.30:5000/accel',
+      url: 'http://'+IP+':5000/accel',
       type: 'json',
       method: 'post',
       data: {
