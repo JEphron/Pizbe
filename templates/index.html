@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Friz</title>
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+    <script src="static/js/canvasjs.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+  </head>
+  <body>
+    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+    <div id="chartContainer" style="height: 300px; width: 100%;">
+
+  </body>
+
+  <script>
+  var dps;
+  var chart;
+  var t = 5
+  var socket = io.connect('http://localhost:5000');
+  
+  socket.on('connect', function() {
+      console.log("connected!")
+      socket.emit('connect') 
+  });
+
+  $(function () {
+    $(document).ready(function () {
+      
+      xdps = [{x: 1, y: 10}, {x: 2, y: 10}, {x: 3, y: 10}, {x: 4, y: 10}, {x: 5, y: 10}]; 
+      ydps = [{x: 1, y: 15}, {x: 2, y: 15}, {x: 3, y: 15}, {x: 4, y: 15}, {x: 5, y: 15}]; 
+      zdps = [{x: 1, y: 20}, {x: 2, y: 20}, {x: 3, y: 20}, {x: 4, y: 20}, {x: 5, y: 20}];
+      
+      chart = new CanvasJS.Chart("chartContainer", {
+        title : {
+          text: "Live Data"
+        },
+        axisX: {
+          title: "Time"
+        },
+        axisY: {        
+          title: "Force Units"
+        },
+        data: [{
+          type: "line",
+          color: '#f00',
+          dataPoints: xdps
+        }, 
+        {
+          type: "line",
+          color: '#0f0',
+          dataPoints: ydps
+        },
+        {
+          type: "line",
+          color: '#00f',
+          dataPoints: zdps
+        }]
+      });
+      chart.render();
+    })
+  })
+  
+  data_queue = []
+
+  socket.on('accel data', function(data) {
+    accel = data.data.accel
+    console.log("got some more data!")
+    for (var i = accel.length - 1; i >= 0; i--) {
+      data_queue.push(accel[i])
+    };
+  });  
+
+
+  setInterval(function () {
+    dat = data_queue.pop()
+    t = t + 1
+    
+    xdps.push({x: t, y: dat['x']});
+    ydps.push({x: t, y: dat['y']});
+    zdps.push({x: t, y: dat['z']});
+    
+    if (xdps.length > 100)
+      xdps.shift();
+    if (ydps.length > 100)
+      ydps.shift();
+    if (zdps.length > 100)
+      zdps.shift();
+
+    chart.render();
+  }, 60);
+  </script>
+</html>
